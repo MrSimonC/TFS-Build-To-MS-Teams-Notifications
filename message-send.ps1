@@ -11,8 +11,8 @@ function Get-ScriptDirectory
 
 function Send-Message {
     param (
-        [string]$BuildBuildNumber,
-        [string]$BuildDefinitionName,
+        [string]$BuildNumber,
+        [string]$DefinitionName,
         [string]$AgentJobStatus,
         [string]$BuildTriggeredBy,
         [string]$BuildBuildUri
@@ -21,7 +21,7 @@ function Send-Message {
         '@type' = "MessageCard"
         '@context' = "https://schema.org/extensions"
         "themeColor" = if ($AgentJobStatus -eq "Succeeded") {"008000"} else {"ff0000"}
-        "title" = "$BuildDefinitionName $BuildBuildNumber`: **$AgentJobStatus**"
+        "title" = "$DefinitionName $BuildNumber`: **$AgentJobStatus**"
         "text" = "Triggered by $BuildTriggeredBy"
         "potentialAction" = @(@{
             '@type' = "OpenUri"
@@ -37,17 +37,37 @@ function Send-Message {
 }
 
 # Azure DevOps Variables
+# Build variables
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=vsts
-$BuildBuildNumber = if ($args[0]) {$args[0]} else {$Env:BUILD_BUILDNUMBER}
-$BuildDefinitionName = if ($args[1]) {$args[1]} else {$env:BUILD_DEFINITIONNAME}
-$AgentJobStatus = if ($args[2]) {$args[2]} else {$env:AGENT_JOBSTATUS}
-$BuildTriggeredBy = if ($args[3]) {$args[3]} else {$env:BUILD_TRIGGEREDBY}
-$BuildBuildUri = if ($args[4]) {$args[4]} else {$env:BUILD_BUILDURI}
+# Release variables
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/release/variables?view=vsts&tabs=batch#view-vars
+
+if ($args[0]) {
+    $BuildNumber = $args[0]
+    $DefinitionName = $args[1]
+    $AgentJobStatus = $args[2]
+    $BuildTriggeredBy = $args[3]
+    $BuildBuildUri = $args[4]
+}
+elseif ($env:RELEASE_DEFINITIONNAME) {
+    $BuildNumber = $Env:RELEASE_RELEASEID  # blank in tfs 2015
+    $DefinitionName = $env:RELEASE_DEFINITIONNAME
+    $AgentJobStatus = $env:AGENT_JOBSTATUS
+    $BuildTriggeredBy = $env:RELEASE_RELEASEDESCRIPTION
+    $BuildBuildUri = $env:RELEASE_RELEASEURI
+}
+else {
+    $BuildNumber = $Env:BUILD_BUILDNUMBER
+    $DefinitionName = $env:BUILD_DEFINITIONNAME
+    $AgentJobStatus = $env:AGENT_JOBSTATUS
+    $BuildTriggeredBy = $env:BUILD_TRIGGEREDBY
+    $BuildBuildUri = $env:BUILD_BUILDURI
+}
 
 # Run
 Send-Message `
--BuildBuildNumber $BuildBuildNumber `
--BuildDefinitionName $BuildDefinitionName `
+-BuildBuildNumber $BuildNumber `
+-BuildDefinitionName $DefinitionName `
 -AgentJobStatus $AgentJobStatus `
 -BuildTriggeredBy $BuildTriggeredBy `
 -BuildBuildUri $BuildBuildUri
