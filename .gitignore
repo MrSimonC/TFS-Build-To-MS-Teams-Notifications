@@ -331,3 +331,4 @@ ASALocalRun/
 
 # Custom ignores as part of project
 MSTeamsWebhook.ps1
+copyToServers.bat
