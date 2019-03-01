@@ -1,4 +1,4 @@
-# Microsoft-Teams-Connector
+# TFS-Build-To-MS-Teams-Notifications
 
 Powershell script for sending in information to Microsoft Teams via incoming web-hook, customised for an Azure DevOps / TFVC build server. For example, a success message is sent into Teams when a build has succeeded. It will determine some automatically created Azure variables and populate a message into Teams.
 
